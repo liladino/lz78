@@ -8,11 +8,12 @@ This program is purely for educational pruposes, the code is not guaranteed to b
 The code is broken down into bit sequences of increasing length, where each sequence is 1 bit longer then the last known sequence. Each sequence get a number (incrementing from 1), and a codeword. The codeword consists of the number (address) of the sequence 1 bit shorter, and the new bit. An example is given below.
 
 Input:
-```0100001010010101000011```
+`0100001010010101000011`
 
 Compression:
 
-```0 1 00 001 01 0010 10 100 0011
+```
+0 1 00 001 01 0010 10 100 0011
 num   code  uncompressed
 0001  0000  0
 0010  0001  1
