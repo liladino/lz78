@@ -1,9 +1,9 @@
-#LZ78
+# LZ78
 
 This is an implementation of the LZ78 lossless compression algorithm described by A. Lempel and J. Ziv.
 This program is purely for educational pruposes, the code is not guaranteed to be flawless, and should not be used in critical places. 
 
-##Example
+## Example
 
 The code is broken down into bit sequences of increasing length, where each sequence is 1 bit longer then the last known sequence. Each sequence get a number (incrementing from 1), and a codeword. The codeword consists of the number (address) of the sequence 1 bit shorter, and the new bit. An example is given below.
 
@@ -27,7 +27,7 @@ num   code  uncompressed
 Output:
 `0000 0001 0010 0111 0011 1000 0100 1110 1001`
 
-##File format
+## File format
 This program uses it's own file format, descibed here. The compressed files have the extension `.lz78`. The format expects little endian, and so does this program.
  
  * first 64 bits: number of codewords in file (n)
