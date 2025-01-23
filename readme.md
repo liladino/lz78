@@ -11,6 +11,7 @@ Input:
 ```0100001010010101000011```
 
 Compression:
+
 ```0 1 00 001 01 0010 10 100 0011
 num   code  uncompressed
 0001  0000  0
