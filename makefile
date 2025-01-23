@@ -5,7 +5,7 @@ ifdef DEBUG
 CFLAGS += -g -DDEBUG
 endif
 
-TARGET = lz
+TARGET = lz.out
 
 SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.c=.o)
