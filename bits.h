@@ -37,6 +37,12 @@ public:
 		v.push_back(b);
 	}
 	
+	void push(const bits& other){
+		for (size_t i = 0; i < other.v.size(); i++){
+			push(other.at(i));
+		}
+	}
+	
 	void pop(){
 		v.pop_back();
 	}

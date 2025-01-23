@@ -6,12 +6,16 @@
 int main(){
 	{
 		int n = 1;
-		if(*(char *)&n == 1) {
-			std::cout << "We are on a little endian system!" << std::endl;
+		if(*(char *)&n != 1) {
+			std::cout << "Currently big endian systems are not supported" << std::endl;
+			return 0;
 		}
+		//~ else {
+			//~ std::cout << "We are on a little endian system!" << std::endl;
+		//~ }
 	}
 
-	std::string s = "01000010100101010000110";
+	std::string s = "01000101001010001101011";
 	
 	std::vector<codeword> compressed;
 	bits message;
@@ -20,11 +24,16 @@ int main(){
 	}
 	
 	compressor::compress(message, compressed);
-		
-	for (const codeword& c : compressed){
-		std::cout << c << " ";
-	}
-	std::cout << std::endl << compressor::maxCodeWordLength(compressed) << std::endl;
+	compressor::set_max_codeword_len(compressed);
 	
+	for (const codeword& c : compressed){
+		compressor::print_bit(c);
+		std::cout << " ";
+	}
+	std::cout << std::endl;
+	
+	bits result;
+	compressor::get_compressed_message(result, compressed);
+	std::cout << result << std::endl;
 	return 0;
 }

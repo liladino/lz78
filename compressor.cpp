@@ -30,8 +30,7 @@ namespace compressor{
 		}
 	}
 	
-	
-	uint64_t maxCodeWordLength(std::vector<codeword>& result){	
+	uint64_t max_codeword_len(const std::vector<codeword>& result){	
 		uint64_t mask = 1, max = 0, res;
 		for (const codeword& c : result){
 			if (c.address > max){
@@ -45,7 +44,39 @@ namespace compressor{
 			}
 		}
 		
-		return res + 1;
+		codeword_len = res+1;
+		
+		return res+1;
+	}
+	
+	void set_max_codeword_len(const std::vector<codeword>& result){	
+		codeword_len = max_codeword_len(result);
+	}
+	
+	size_t codeword_len;
+	
+	void print_bit(const codeword& c) {
+		std::cout << "("; //<< codeword_len << "  ";
+		for (uint64_t mask = 1LLU << (codeword_len-2); mask != 0; mask >>= 1){
+			std::cout << ((mask & c.address) == 0 ? 0 : 1);
+		}
+		std::cout << " " << (int)(c.newbit) << ")";
+	}
+	
+	void print_bit(bits& b, const codeword& c) {
+		for (uint64_t mask = 1LLU << (codeword_len-2); mask != 0; mask >>= 1){
+			b.push((mask & c.address) == 0 ? 0 : 1);
+		}
+		b.push(c.newbit);
+	}
+	
+	void get_compressed_message(bits& result, const std::vector<codeword>& codes){
+		set_max_codeword_len(codes);
+		for (const codeword& c : codes){
+			bits b;
+			print_bit(b, c);
+			result.push(b);
+		}
 	}
 }
 
