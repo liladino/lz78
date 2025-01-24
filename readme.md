@@ -3,9 +3,13 @@
 This is an implementation of the LZ78 lossless compression algorithm described by A. Lempel and J. Ziv.
 This program is purely for educational purposes, the code is not guaranteed to be flawless, and should not be used in critical places. 
 
-##Compression:
+## Compression:
 
 The bit stream is broken down into bit sequences of increasing length, where each sequence is 1 bit longer then the last known sequence. Each sequence get a number (incrementing from 1), and a codeword. Each sequence is encoded into a codeword, where the codeword consists of the address of the sequence 1 bit shorter and the new bit. An example is given below.
+
+### Note
+
+This format currently only supports individual files. The algorithm is expected to perform poorly on multimedia files (audio, video), already compressed formats (like most image formats), small files, and in general files with high entropy. 
 
 ### Example
 
@@ -44,7 +48,17 @@ This program uses its own file format, described here. The compressed files have
 | Codewords           | `n * k`    | Compressed data stored as codewords (`n*(address + new bit)`).              |
 | Remaining Bits      | Variable   | A known sequence of bits; the file ends with this address.                  |
  
-## Requirements for the program
+## Build and Run 
+
+### Requirements for the program
 
  * A C++11 (or later) compiler.
  * Little-endian machine (most modern systems).
+
+The codebase includes a makefile, you can compile the program with:
+
+`make all`
+
+And run the executable with:
+
+`./lz.out`
