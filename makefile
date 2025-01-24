@@ -25,3 +25,4 @@ clean:
 	rm *.o -f
 	rm debug -f
 	rm all -f
+	rm $(TARGET)

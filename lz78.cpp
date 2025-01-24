@@ -1,6 +1,9 @@
 #include "bits.h"
 #include "codeword.h"
 #include "compressor.h"
+#ifdef DEBUG
+	#include "tests.h"
+#endif
 #include <map>
 
 int main(){
@@ -10,10 +13,10 @@ int main(){
 			std::cout << "Currently big endian systems are not supported" << std::endl;
 			return 0;
 		}
-		//~ else {
-			//~ std::cout << "We are on a little endian system!" << std::endl;
-		//~ }
 	}
+	#ifdef DEBUG
+	tests();
+	#endif
 
 	std::string s = "01000010100101010000110010";
 	
@@ -24,6 +27,6 @@ int main(){
 	
 	compressor::compress(message, result);
 	
-	std::cout << result << std::endl;
+	std::cout << "\nResult: " << result << std::endl;
 	return 0;
 }

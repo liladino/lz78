@@ -111,19 +111,19 @@ namespace compressor{
 		result.push_ui64(codeword_len);
 		result.push_ui8(padding_info);
 		
-		#ifdef DEBUG
-		std::cout << "Meta info:   " << result << "\n                    l       z";
-		std::cout << std::setw(64) << number_of_codewords;
-		std::cout << std::setw(64) << codeword_len;
-		std::cout << std::setw(8) << (int)padding_info << std::endl;
-		#endif
+		//~ #ifdef DEBUG 
+		//~ std::cout << std::endl << "Meta info:   " << result << "\n                    l       z";
+		//~ std::cout << std::setw(64) << number_of_codewords;
+		//~ std::cout << std::setw(64) << codeword_len;
+		//~ std::cout << std::setw(8) << (int)padding_info << std::endl;
+		//~ #endif
 		
 		result.push_bits(compressed_part);
 		
-		#ifdef DEBUG
-		for (size_t i = 0; i < padding_info; i++) compressed_part.pop();
-		std::cout << "Compression: " << compressed_part << " and " << (int)padding_info << " padding zeroe(s) at the end." << std::endl;
-		#endif
+		//~ #ifdef DEBUG
+		//~ for (size_t i = 0; i < padding_info; i++) compressed_part.pop();
+		//~ std::cout << "Compression: " << compressed_part << " and " << (int)padding_info << " padding zeroe(s) at the end." << std::endl;
+		//~ #endif
 	}
 }
 

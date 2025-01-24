@@ -9,11 +9,7 @@
 class bits {
 private:
 	std::vector<bool> v;
-	bool operator==(const bits& oths) const {
-		if (oths < *this) return false;
-		if (*this < oths) return false;
-		return true;
-	}
+	
 public:
 	bits(){};
 	bits(std::vector<bool>& v) : v(v){}
@@ -82,6 +78,12 @@ public:
 			}
 		}
 		return false;
+	}
+	
+	bool operator==(const bits& oths) const {
+		if (oths < *this) return false;
+		if (*this < oths) return false;
+		return true;
 	}
 	
 	friend std::ostream& operator<<(std::ostream& os, const bits& b);
