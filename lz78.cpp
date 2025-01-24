@@ -17,23 +17,13 @@ int main(){
 
 	std::string s = "01000101001010001101011";
 	
-	std::vector<codeword> compressed;
-	bits message;
+	bits message, result;
 	for (size_t i = 0; i < s.size(); i++){
-		message.push(s[i] == '1' ? 1 : 0);
+		message.push_bool(s[i] == '1' ? 1 : 0);
 	}
 	
-	compressor::compress(message, compressed);
-	compressor::set_max_codeword_len(compressed);
+	compressor::compress(message, result);
 	
-	for (const codeword& c : compressed){
-		compressor::print_bit(c);
-		std::cout << " ";
-	}
-	std::cout << std::endl;
-	
-	bits result;
-	compressor::get_compressed_message(result, compressed);
 	std::cout << result << std::endl;
 	return 0;
 }

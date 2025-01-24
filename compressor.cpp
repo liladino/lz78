@@ -1,13 +1,13 @@
 #include "compressor.h"
 
 namespace compressor{	
-	void compress(const bits& message, std::vector<codeword>& result){
+	void break_down(const bits& message, std::vector<codeword>& result){
 		std::map<bits, uint64_t> known;
 		uint64_t index = 1;
 		bits b;
 		
 		for (size_t i = 0; i < message.size(); i++){
-			b.push(message.at(i));
+			b.push_bool(message.at(i));
 			if (0 == known.count(b)){
 				int newbit = b.at(b.size()-1);
 				known[b] = index++;
@@ -30,7 +30,7 @@ namespace compressor{
 		}
 	}
 	
-	uint64_t max_codeword_len(const std::vector<codeword>& result){	
+	uint64_t set_max_codeword_len(const std::vector<codeword>& result){	
 		uint64_t mask = 1, max = 0, res;
 		for (const codeword& c : result){
 			if (c.address > max){
@@ -49,9 +49,9 @@ namespace compressor{
 		return res+1;
 	}
 	
-	void set_max_codeword_len(const std::vector<codeword>& result){	
-		codeword_len = max_codeword_len(result);
-	}
+	//~ void set_max_codeword_len(const std::vector<codeword>& result){	
+		//~ codeword_len = max_codeword_len(result);
+	//~ }
 	
 	size_t codeword_len;
 	
@@ -63,20 +63,61 @@ namespace compressor{
 		std::cout << " " << (int)(c.newbit) << ")";
 	}
 	
-	void print_bit(bits& b, const codeword& c) {
+	void write_codeword_to_bits(const codeword& c, bits& b) {
 		for (uint64_t mask = 1LLU << (codeword_len-2); mask != 0; mask >>= 1){
-			b.push((mask & c.address) == 0 ? 0 : 1);
+			b.push_bool((mask & c.address) == 0 ? 0 : 1);
 		}
-		b.push(c.newbit);
+		b.push_bool(c.newbit);
 	}
 	
-	void get_compressed_message(bits& result, const std::vector<codeword>& codes){
+	void set_compressed_message(const std::vector<codeword>& codes, bits& result){
 		set_max_codeword_len(codes);
 		for (const codeword& c : codes){
 			bits b;
-			print_bit(b, c);
-			result.push(b);
+			write_codeword_to_bits(c, b);
+			result.push_bits(b);
 		}
+	}
+	
+	uint8_t add_padding(bits& result){
+		if (result.size() % 8 == 0) return 0;
+		size_t x = 8 - (result.size() % 8);
+		for (size_t i = 0; i < x; i++){
+			result.push_bool(0);
+		}
+		
+		return x;
+	}
+	
+	void compress(const bits& message, bits& result){	
+		bits compressed_part;
+		std::vector<codeword> code;
+		
+		break_down(message, code);
+		set_compressed_message(code, compressed_part);
+		
+		uint64_t number_of_codewords = code.size();
+		uint64_t codeword_len = set_max_codeword_len(code); 
+		uint8_t padding_info = add_padding(compressed_part);
+		
+		result.push_ui8('l');
+		result.push_ui8('z');
+		result.push_ui64(number_of_codewords);
+		result.push_ui64(codeword_len);
+		result.push_ui8(padding_info);
+		
+		#ifdef DEBUG
+		std::cout << "Meta info:   " << result << "\n                  l       z";
+		std::cout << std::setw(64) << number_of_codewords;
+		std::cout << std::setw(64) << codeword_len;
+		std::cout << std::setw(8) << (int)padding_info << std::endl;
+		#endif
+		
+		result.push_bits(compressed_part);
+		
+		#ifdef DEBUG
+		std::cout << "Compression: " << compressed_part << std::endl;
+		#endif
 	}
 }
 

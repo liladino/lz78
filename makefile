@@ -16,7 +16,7 @@ $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -O2 -o $@ $^
 
 debug: $(OBJS)
-	$(CC) $(CFLAGS) -g -DDEBUG -o $@ $^
+	$(CC) $(CFLAGS) -g -DDEBUG -o $(TARGET) $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

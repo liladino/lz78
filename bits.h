@@ -33,13 +33,25 @@ public:
 		v.clear();
 	}
 
-	void push(bool b){
+	void push_bool(bool b){
 		v.push_back(b);
 	}
 	
-	void push(const bits& other){
+	void push_bits(const bits& other){
 		for (size_t i = 0; i < other.v.size(); i++){
-			push(other.at(i));
+			push_bool(other.at(i));
+		}
+	}
+	
+	void push_ui64(uint64_t n){
+		for (uint64_t mask = 1LLU << 63; mask != 0; mask >>= 1){
+			push_bool((mask & n) == 0 ? 0 : 1);
+		}
+	}
+	
+	void push_ui8(uint8_t n){
+		for (uint8_t mask = 1 << 7; mask != 0; mask >>= 1){
+			push_bool((mask & n) == 0 ? 0 : 1);
 		}
 	}
 	
