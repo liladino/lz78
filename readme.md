@@ -14,13 +14,13 @@ This format currently supports individual files only. The algorithm is not well-
 ### Example
 
 Input:
-`0100001010010101000011`
+`01000010100101010000110010`
 
 Compression:
 
 ```
-0 1 00 001 01 0010 10 100 0011
-num   code  uncompressed bit sequence
+0 1 00 001 01 0010 10 100 0011 0010
+addr  code  uncompressed bit sequence
 0001  0000  0
 0010  0001  1
 0011  0010  00
@@ -32,22 +32,27 @@ num   code  uncompressed bit sequence
 1001  1001  0011
 ```
 
+At the end, `0010` is already known, so we represent it with it's address only. As seen in the example, the addresses can be longer than what we actually need - if the longest addresses ( `1000` and `1001` here ) are not used in any codeword, leading zeroes can be omitted. In this case this means that unambigous encoding can be achieved with only 3 bit long addresses, despite there being more than `2^3-1` bit sequences. 
+
 Output:
-`0000 0001 0010 0111 0011 1000 0100 1110 1001`
+`0000 0001 0010 0111 0011 1000 0100 1110 1001 110`
 
 ## File format
 
 This program uses its own file format, described here. The compressed files have the extension `.lz78`. The format expects little endian, and so does this program.
  
-| Field               | Size       | Description                                                                 |
-|---------------------|------------|-----------------------------------------------------------------------------|
-| Format Information  | 16 bits    | Fixed string: the characters 'l' and 'z'.                                   |
-| Length Info         | 64 bits    | Number of codewords in the file (`n`).                                      |
-| Coding Info         | 64 bits    | Length of each codeword (`k = len(i) + 1`, where `i` is the address).       |
-| Padding Info        | 8 bits     | Number of padding bits at the end of the file.                              |
-| Codewords           | `n * k`    | Compressed data stored as codewords (`n*(address + new bit)`).              |
-| Remaining Bits      | Variable   | A known sequence of bits; the file ends with this address.                  |
+| Field                | Size       | Description                                                                 |
+|----------------------|------------|-----------------------------------------------------------------------------|
+| Format Information   | 16 bits    | Fixed string: the characters 'l' and 'z'.                                   |
+| Length Info          | 64 bits    | Number of codewords in the file (`n`).                                      |
+| Coding Info          | 64 bits    | Length of each codeword (`k = len(i) + 1`, where `i` is the address).       |
+| Padding Info         | 8 bits     | Number of padding bits at the end of the file.                              |
+| Codewords            | `n * k`    | Compressed data stored as codewords (`n*(address + new bit)`).              |
+| Remaining Bits' Info | `k-1`      | An already known address, a 'not new codeword'.                             |
+| Padding              | Variable   | Zeroes added to ensure the file size is a multiple of 8 bits (1 byte).      |
  
+The remaining bits' info should be `k-1` zeroes, if the bit stream was a whole number of codewords. Otherwise, the remaining bits at the end of the stream are a known sequence of bits, and as such could be represented with an address of a known sequence. See the example.
+
 ## Build and Run 
 
 ### Requirements for the program
