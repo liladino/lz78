@@ -67,7 +67,7 @@ namespace compressor{
 		for (uint64_t mask = 1LLU << (codeword_len-2); mask != 0; mask >>= 1){
 			b.push_bool((mask & c.address) == 0 ? 0 : 1);
 		}
-		b.push_bool(c.newbit);
+		if (!c.remaining) b.push_bool(c.newbit);
 	}
 	
 	void set_compressed_message(const std::vector<codeword>& codes, bits& result){
@@ -107,7 +107,7 @@ namespace compressor{
 		result.push_ui8(padding_info);
 		
 		#ifdef DEBUG
-		std::cout << "Meta info:   " << result << "\n                  l       z";
+		std::cout << "Meta info:   " << result << "\n                    l       z";
 		std::cout << std::setw(64) << number_of_codewords;
 		std::cout << std::setw(64) << codeword_len;
 		std::cout << std::setw(8) << (int)padding_info << std::endl;
@@ -116,7 +116,8 @@ namespace compressor{
 		result.push_bits(compressed_part);
 		
 		#ifdef DEBUG
-		std::cout << "Compression: " << compressed_part << std::endl;
+		for (size_t i = 0; i < padding_info; i++) compressed_part.pop();
+		std::cout << "Compression: " << compressed_part << " and " << (int)padding_info << " padding zeroe(s) at the end." << std::endl;
 		#endif
 	}
 }

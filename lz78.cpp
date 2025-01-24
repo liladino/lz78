@@ -15,7 +15,7 @@ int main(){
 		//~ }
 	}
 
-	std::string s = "01000101001010001101011";
+	std::string s = "01000010100101010000110010";
 	
 	bits message, result;
 	for (size_t i = 0; i < s.size(); i++){

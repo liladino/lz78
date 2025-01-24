@@ -3,7 +3,7 @@
 This is an implementation of the LZ78 lossless compression algorithm described by A. Lempel and J. Ziv.
 This program is purely for educational purposes, the code is not guaranteed to be flawless, and should not be used in critical places. 
 
-## Compression:
+## Compression
 
 The bit stream is broken down into bit sequences of increasing length, where each sequence is 1 bit longer then the last known sequence. Each sequence get a number (incrementing from 1), and a codeword. Each sequence is encoded into a codeword, where the codeword consists of the address of the sequence 1 bit shorter and the new bit. An example is given below.
 
@@ -32,7 +32,7 @@ addr  code  uncompressed bit sequence
 1001  1001  0011
 ```
 
-At the end, `0010` is already known, so we represent it with it's address only. As seen in the example, the addresses can be longer than what we actually need - if the longest addresses ( `1000` and `1001` here ) are not used in any codeword, leading zeroes can be omitted. In this case this means that unambigous encoding can be achieved with only 3 bit long addresses, despite there being more than `2^3-1` bit sequences. 
+At the end, `0010` is already known, so we represent it with it's address only. As seen in this example, the addresses can be longer than what we actually need - if the longest addresses ( `1000` and `1001` here ) are not used in any codeword, leading zeroes can be omitted. In this case this means that unambigous encoding can be achieved with only 3 bit long addresses, despite there being more than `2^3-1` bit sequences. 
 
 Output:
 `0000 0001 0010 0111 0011 1000 0100 1110 1001 110`
@@ -46,7 +46,7 @@ This program uses its own file format, described here. The compressed files have
 | Format Information   | 16 bits    | Fixed string: the characters 'l' and 'z'.                                   |
 | Length Info          | 64 bits    | Number of codewords in the file (`n`).                                      |
 | Coding Info          | 64 bits    | Length of each codeword (`k = len(i) + 1`, where `i` is the address).       |
-| Padding Info         | 8 bits     | Number of padding bits at the end of the file.                              |
+| Padding Info         |  8 bits    | Number of padding bits at the end of the file.                              |
 | Codewords            | `n * k`    | Compressed data stored as codewords (`n*(address + new bit)`).              |
 | Remaining Bits' Info | `k-1`      | An already known address, a 'not new codeword'.                             |
 | Padding              | Variable   | Zeroes added to ensure the file size is a multiple of 8 bits (1 byte).      |
