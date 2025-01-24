@@ -28,6 +28,11 @@ namespace compressor{
 			 * compressed it. */
 			result.push_back(codeword(known[b], 0, true));
 		}
+		else {
+			/* If everything has been compressed, save a zero address, so that
+			 * the file format will be consistent*/
+			result.push_back(codeword(0, 0, true));
+		}
 	}
 	
 	uint64_t set_max_codeword_len(const std::vector<codeword>& result){	
