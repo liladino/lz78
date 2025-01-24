@@ -9,7 +9,7 @@ The bit stream is broken down into bit sequences of increasing length, where eac
 
 ### Note
 
-This format currently only supports individual files. The algorithm is expected to perform poorly on multimedia files (audio, video), already compressed formats (like most image formats), small files, and in general files with high entropy. 
+This format currently supports individual files only. The algorithm is not well-suited for multimedia files (e.g., audio, video), already compressed formats (e.g., most image formats), small files, or files with high entropy. However, it performs efficiently on files with clear patterns of repetition, such as logs, plain text files, and especially markup files (e.g., HTML, XML, Markdown).
 
 ### Example
 
