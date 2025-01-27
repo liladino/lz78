@@ -94,7 +94,7 @@ namespace compressor{
 		return x;
 	}
 	
-	void compress(const bits& message, bits& result){	
+	void compress(const bits& message, bits& result, bool talkative){	
 		bits compressed_part;
 		std::vector<codeword> code;
 		
@@ -111,19 +111,19 @@ namespace compressor{
 		result.push_ui64(codeword_len);
 		result.push_ui8(padding_info);
 		
-		//~ #ifdef DEBUG 
-		//~ std::cout << std::endl << "Meta info:   " << result << "\n                    l       z";
-		//~ std::cout << std::setw(64) << number_of_codewords;
-		//~ std::cout << std::setw(64) << codeword_len;
-		//~ std::cout << std::setw(8) << (int)padding_info << std::endl;
-		//~ #endif
+		if (talkative){
+			std::cout << std::endl << "Meta info:   " << result << "\n                    l       z";
+			std::cout << std::setw(64) << number_of_codewords;
+			std::cout << std::setw(64) << codeword_len;
+			std::cout << std::setw(8) << (int)padding_info << std::endl;
+		}
 		
 		result.push_bits(compressed_part);
 		
-		//~ #ifdef DEBUG
-		//~ for (size_t i = 0; i < padding_info; i++) compressed_part.pop();
-		//~ std::cout << "Compression: " << compressed_part << " and " << (int)padding_info << " padding zeroe(s) at the end." << std::endl;
-		//~ #endif
+		if (talkative){
+			for (size_t i = 0; i < padding_info; i++) compressed_part.pop();
+			std::cout << "Compression: " << compressed_part << " and " << (int)padding_info << " padding zeroe(s) at the end." << std::endl;
+		}
 	}
 }
 

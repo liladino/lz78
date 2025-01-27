@@ -22,7 +22,7 @@ void tests(){
 			message.push_ui8(s[i]);
 		}
 		std::vector<uint8_t> transformed;
-		io::flush_bits_to_vector(message, transformed);
+		io::out::flush_bits_to_vector(message, transformed);
 		bits back;
 		for (const uint8_t& x : transformed){
 			back.push_ui8(x);

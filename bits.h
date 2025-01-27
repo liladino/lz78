@@ -16,9 +16,6 @@ public:
 	bits(const bits& b){
 		v = b.v;
 	}
-	//~ bits(bool b) {
-		//~ append(b);
-	//~ }
 	
 	bits& operator=(const bits& other){
 		v = other.v;
@@ -29,7 +26,7 @@ public:
 		v.clear();
 	}
 
-	void push_bool(bool b){
+	void push_bool(const bool b){
 		v.push_back(b);
 	}
 	
@@ -39,13 +36,13 @@ public:
 		}
 	}
 	
-	void push_ui64(uint64_t n){
+	void push_ui64(const uint64_t n){
 		for (uint64_t mask = 1LLU << 63; mask != 0; mask >>= 1){
 			push_bool((mask & n) == 0 ? 0 : 1);
 		}
 	}
 	
-	void push_ui8(uint8_t n){
+	void push_ui8(const uint8_t n){
 		for (uint8_t mask = 1 << 7; mask != 0; mask >>= 1){
 			push_bool((mask & n) == 0 ? 0 : 1);
 		}
@@ -63,7 +60,7 @@ public:
 		return v.at(i);
 	}
 	
-	bool operator[](size_t i){
+	bool operator[](size_t i) const{
 		return v.at(i);
 	}
 	
