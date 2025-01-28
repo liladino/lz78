@@ -79,12 +79,11 @@ int main(int argc, char** argv){
 		std::cout << "No input file given, try --help." << std::endl;
 		exit(0);
 	}
-	else {
-		std::ifstream file(in_filename, std::ios::binary);
-		if (!file.is_open()){
-			std::cout << "Input not found!" << std::endl;
-		}
-		file.close();
+	
+	std::ifstream in_file(in_filename, std::ios::binary);
+	if (!in_file.is_open()){
+		std::cout << "Input not found!" << std::endl;
+		return 0;
 	}
 	
 	if (out_filename == ""){
@@ -102,34 +101,18 @@ int main(int argc, char** argv){
 	std::cout << in_filename << " " << out_filename << "\n";
 	#endif
 	
-	//~ else if (argc == 2){
-		//~ in_filename = argv[1];
-		//~ std::ifstream file1(in_filename, std::ios::binary);
-		//~ if (!file1.open()){
-			//~ std::cout << "Input not found!" << std::endl;
-		//~ }
-		//~ file1.close();
-	//~ }
-	//~ else {
-		//~ in_filename = argv[1];
-		//~ out_filename = argv[2];
-		
-		//~ std::ifstream file1(in_filename, std::ios::binary);
-		//~ if (!file1.open()){
-			//~ compress_dir = decompress;
-			
-			//~ std::ifstream file2(out_filename, std::ios::binary);
-			//~ if (!file2.open()){
-				//~ std::cout << "Input not found!" << std::endl;
-				//~ return 0;
-			//~ }
-			//~ file2.close();
-		//~ }
-		//~ file1.close();
-	//~ }
+	std::ofstream out_file(out_filename, std::ios::binary);
+	if (!out_file.is_open()){
+		std::cout << "Can't make output file: \"" << out_filename << "\"" << std::endl;
+		return 0;
+	}
 	
+	if (dir == compress){
+		compressor::compress(in_file, out_file);
+	}
 	
-	
+	in_file.close();
+	out_file.close();
 	
 	return 0;
 }

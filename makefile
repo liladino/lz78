@@ -1,24 +1,26 @@
 CC = g++
-CFLAGS = -Wall -pedantic -Wextra
+CFLAGS = -Wall -Wextra -pedantic -MMD
 
 TARGET = lz.out
 
 SRCS = $(wildcard *.cpp)
-OBJS = $(SRCS:.c=.o)
+OBJS = $(SRCS:.cpp=.o)
+DEPS = $(OBJS:.o=.d)
 
+debug: CFLAGS += -g -DDEBUG -DMEMTRACE
+debug: $(TARGET)
+
+all: CFLAGS += -O2
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -O2 -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^
 
-debug: $(OBJS)
-	$(CC) $(CFLAGS) -g -DDEBUG -DMEMTRACE -o $(TARGET) $^
-
-%.o: %.c
+%.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm *.o -f
-	rm debug -f
-	rm all -f
-	rm $(TARGET)
+	rm -f *.o *.d
+	rm $(TARGET) -f
+
+-include $(DEPS)

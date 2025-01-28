@@ -126,13 +126,10 @@ namespace compressor{
 		
 		static const char* format_info = "lz78"; 
 		
-		out_file.write(format_info, 4 * sizeof(char));		
-		//~ result.push_ui8('l');
-		//~ result.push_ui8('z');
-		
-		out_file.write((const char*)(&number_of_codewords),                  8);
-		out_file.write((const char*)(&codeword_len),                         8);
-		out_file.write((const char*)(&padding_info),                         1);
+		out_file.write(              format_info,                 4 * sizeof(char));		
+		out_file.write((const char*)(&number_of_codewords),       1 * sizeof(uint64_t));
+		out_file.write((const char*)(&codeword_len),              1 * sizeof(uint64_t));
+		out_file.write((const char*)(&padding_info),              1 * sizeof(uint8_t));
 		out_file.write((const char*)(compressed_part.get_data()), compressed_part.size_padded());
 	}
 }
