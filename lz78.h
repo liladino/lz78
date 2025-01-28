@@ -12,5 +12,10 @@
 #include <cstring>
 #include <fstream>
 
+typedef enum compression_dir {
+	compress,
+	decompress
+} compression_dir;
+
 
 #endif

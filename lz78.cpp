@@ -1,11 +1,5 @@
 #include "lz78.h"
 
-typedef enum compression_dir {
-	compress,
-	decompress
-} compression_dir;
-
-
 int main(int argc, char** argv){
 	{
 		int n = 1;
@@ -73,11 +67,12 @@ int main(int argc, char** argv){
 	}
 	catch (const char* const err) {
 		std::cout << "Can't parse arguments, try --help. Don't know what to do with \"" << err << "\"." << std::endl;
-		exit(0);
+		return 0;
 	}
+	
 	if (in_filename == ""){
 		std::cout << "No input file given, try --help." << std::endl;
-		exit(0);
+		return 0;
 	}
 	
 	std::ifstream in_file(in_filename, std::ios::binary);

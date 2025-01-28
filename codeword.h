@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-struct codeword {
+struct codeword {	
 	uint64_t address = 0;
 	bool newbit = 0;
 	bool remaining = false;

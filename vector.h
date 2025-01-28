@@ -2,8 +2,9 @@
 #define VECTOR_H
 
 #include <iostream>
-#include "memtrace.h"
-//#include "ioformat.h"
+#ifdef DEBUG
+	#include "memtrace.h"
+#endif
 #include "string.h"
 
 namespace my{
@@ -237,7 +238,7 @@ namespace my{
 			length = v.length;
 			return *this;
 		}
-		
+				
 		const uint8_t* get_data() const {
 			return data.get_data();
 		}
