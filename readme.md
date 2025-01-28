@@ -43,7 +43,7 @@ This program uses its own file format, described here. The compressed files have
  
 | Field                | Size       | Description                                                                 |
 |----------------------|------------|-----------------------------------------------------------------------------|
-| Format Information   | 16 bits    | Fixed string: the characters 'l' and 'z'.                                   |
+| Format Information   | 32 bits    | Fixed string: the characters 'l' 'z' '7' and '8'                            |
 | Length Info          | 64 bits    | Number of codewords in the file (`n`).                                      |
 | Coding Info          | 64 bits    | Length of each codeword (`k = len(i) + 1`, where `i` is the address).       |
 | Padding Info         |  8 bits    | Number of padding bits at the end of the file.                              |

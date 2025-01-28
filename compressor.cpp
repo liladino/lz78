@@ -1,32 +1,52 @@
 #include "compressor.h"
 
 namespace compressor{	
-	void break_down(const bits& message, std::vector<codeword>& result){
+	using my::vector;
+	
+	void break_down(std::ifstream& file, vector<codeword>& result){
 		std::map<bits, uint64_t> known;
 		uint64_t index = 1;
-		bits b;
+		bits buffer, current;
 		
-		for (size_t i = 0; i < message.size(); i++){
-			b.push_bool(message.at(i));
-			if (0 == known.count(b)){
-				int newbit = b.at(b.size()-1);
-				known[b] = index++;
+		io::in::read_bytes_from_file(file, buffer, 1024);
+
+		for (size_t i = 0; i < buffer.size(); i++){
+			bool newbit = buffer.at(i);
+			if (i == buffer.size() - 1){
+				//if the buffer is about to be empty, try read in a kB new data
+				buffer.clear();
+				if (0 < io::in::read_bytes_from_file(file, buffer, 1024)){
+					/* read new bits, and after this loop ends, start again
+					 * at i == 0 */
+					i = -1;
+				}
+				else {
+					//couldn't read anything, the loop should exit next time
+					i = 1;
+				}
+			}
+			
+			current.push_bool(newbit);
+			if (0 == known.count(current)){
+				//int newbit = current.last();
+				known[current] = index++;
 				
-				if (b.size() > 1){
-					b.pop();				
-					result.push_back(codeword(known[b], newbit));
+				if (current.size() > 1){
+					current.pop();				
+					result.push_back(codeword(known[current], newbit));
 				}
 				else{				
 					result.push_back(codeword(0, newbit));
 				}
-				b.clear();
+				current.clear();
 			}
 		}
-		if (b.size() > 0) {
+		
+		if (current.size() > 0) {
 			/* Save the last couple of bits as a known sequence.
 			 * It is known, because otherwise the algorithm would have 
 			 * compressed it. */
-			result.push_back(codeword(known[b], 0, true));
+			result.push_back(codeword(known[current], 0, true));
 		}
 		else {
 			/* If everything has been compressed, save a zero address, so that
@@ -35,7 +55,9 @@ namespace compressor{
 		}
 	}
 	
-	uint64_t set_max_codeword_len(const std::vector<codeword>& result){	
+	uint64_t codeword_len;
+	
+	uint64_t set_max_codeword_len(const vector<codeword>& result){	
 		uint64_t mask = 1, max = 0, res;
 		for (const codeword& c : result){
 			if (c.address > max){
@@ -54,12 +76,6 @@ namespace compressor{
 		return res+1;
 	}
 	
-	//~ void set_max_codeword_len(const std::vector<codeword>& result){	
-		//~ codeword_len = max_codeword_len(result);
-	//~ }
-	
-	size_t codeword_len;
-	
 	void print_bit(const codeword& c) {
 		std::cout << "("; //<< codeword_len << "  ";
 		for (uint64_t mask = 1LLU << (codeword_len-2); mask != 0; mask >>= 1){
@@ -75,7 +91,7 @@ namespace compressor{
 		if (!c.remaining) b.push_bool(c.newbit);
 	}
 	
-	void set_compressed_message(const std::vector<codeword>& codes, bits& result){
+	void set_compressed_data(const vector<codeword>& codes, bits& result){
 		set_max_codeword_len(codes);
 		for (const codeword& c : codes){
 			bits b;
@@ -94,36 +110,30 @@ namespace compressor{
 		return x;
 	}
 	
-	void compress(const bits& message, bits& result, bool talkative){	
+	//expects two in binary mode open files 
+	void compress(std::ifstream& in_file, std::ofstream& out_file){	
 		bits compressed_part;
-		std::vector<codeword> code;
+		vector<codeword> code;
 		
-		break_down(message, code);
-		set_compressed_message(code, compressed_part);
+		break_down(in_file, code);
+		set_compressed_data(code, compressed_part);
 		
 		uint64_t number_of_codewords = code.size();
-		uint64_t codeword_len = set_max_codeword_len(code); 
-		uint8_t padding_info = add_padding(compressed_part);
+		set_max_codeword_len(code); 
+		/* Padding: 0 bits, if divisible by 8, otherwise 8 - remainder. */
+		uint8_t padding_info = (8 - (((codeword_len % 8) * (number_of_codewords % 8)) % 8)) % 8;
+		add_padding(compressed_part);
 		
-		result.push_ui8('l');
-		result.push_ui8('z');
-		result.push_ui64(number_of_codewords);
-		result.push_ui64(codeword_len);
-		result.push_ui8(padding_info);
+		static const char* format_info = "lz78"; 
 		
-		if (talkative){
-			std::cout << std::endl << "Meta info:   " << result << "\n                    l       z";
-			std::cout << std::setw(64) << number_of_codewords;
-			std::cout << std::setw(64) << codeword_len;
-			std::cout << std::setw(8) << (int)padding_info << std::endl;
-		}
+		out_file.write(format_info, 4 * sizeof(char));		
+		//~ result.push_ui8('l');
+		//~ result.push_ui8('z');
 		
-		result.push_bits(compressed_part);
-		
-		if (talkative){
-			for (size_t i = 0; i < padding_info; i++) compressed_part.pop();
-			std::cout << "Compression: " << compressed_part << " and " << (int)padding_info << " padding zeroe(s) at the end." << std::endl;
-		}
+		out_file.write((const char*)(&number_of_codewords),                  8);
+		out_file.write((const char*)(&codeword_len),                         8);
+		out_file.write((const char*)(&padding_info),                         1);
+		out_file.write((const char*)(compressed_part.get_data()), compressed_part.size_padded());
 	}
 }
 

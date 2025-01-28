@@ -1,18 +1,18 @@
 #ifndef BITS_H
 #define BITS_H 
 
-#include <vector>
+#include "vector.h"
 #include <iostream>
 #include <string>
 
 
 class bits {
 private:
-	std::vector<bool> v;
+	my::vector<bool> v;
 	
 public:
 	bits(){};
-	bits(std::vector<bool>& v) : v(v){}
+	bits(my::vector<bool>& v) : v(v){}
 	bits(const bits& b){
 		v = b.v;
 	}
@@ -55,13 +55,24 @@ public:
 	size_t size() const{
 		return v.size();
 	}
+	size_t size_padded() const{
+		return v.size_in_ui8();
+	}
+	
+	bool last() const {
+		return v.at(v.size()-1);
+	}
 	
 	bool at(size_t i) const {
 		return v.at(i);
 	}
 	
-	bool operator[](size_t i) const{
-		return v.at(i);
+	void add_padding(){
+		v.add_padding();
+	}
+	
+	const uint8_t* get_data() const {
+		return v.get_data();
 	}
 	
 	bool operator<(const bits& other) const{

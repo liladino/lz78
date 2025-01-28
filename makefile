@@ -1,10 +1,6 @@
 CC = g++
 CFLAGS = -Wall -pedantic -Wextra
 
-ifdef DEBUG
-CFLAGS += -g -DDEBUG
-endif
-
 TARGET = lz.out
 
 SRCS = $(wildcard *.cpp)
@@ -16,7 +12,7 @@ $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -O2 -o $@ $^
 
 debug: $(OBJS)
-	$(CC) $(CFLAGS) -g -DDEBUG -o $(TARGET) $^
+	$(CC) $(CFLAGS) -g -DDEBUG -DMEMTRACE -o $(TARGET) $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
