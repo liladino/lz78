@@ -8,6 +8,7 @@
 	#include "tests.h"
 #endif
 #include <iostream>
+#include <filesystem>
 #include <string>
 #include <cstring>
 #include <fstream>

@@ -52,7 +52,7 @@ test
 *.pgn
 test.txt
 debuglog.txt
-meta/
+example.txt
 
 # Kernel Module Compile Results
 *.mod*

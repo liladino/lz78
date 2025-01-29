@@ -24,8 +24,10 @@ int main(int argc, char** argv){
 		return 0;
 	}
 	
+	bool dont_keep = false;
+	
 	try {
-		int o = 0, d = 0;
+		int o = 0;
 		for (int i = 1; i < argc; i++){
 			if (o == 1){
 				if (*argv[i] == '-'){
@@ -41,11 +43,10 @@ int main(int argc, char** argv){
 				}
 			}
 			else if (strncmp(argv[i], "-d", 2) == 0) {
-				d++;
-				if (d != 1){
-					throw argv[i];
-				}
 				dir = decompress;
+			}
+			else if (strncmp(argv[i], "-k", 2) == 0) {
+				dont_keep = true;
 			}
 			else if (strncmp(argv[i], "--help", 6) == 0 || strncmp(argv[i], "-h", 2) == 0){
 				std::cout << 
@@ -55,6 +56,7 @@ int main(int argc, char** argv){
 					Options\n\
 					\t-d decompress the given file\n\
 					\t-o set the name of the output (the name comes right after -o)\n\
+					\t-k don't keep the original file, remove after (de)compressing \n\
 					\t-h --help show how to\n";
 			}
 			else {
@@ -101,13 +103,37 @@ int main(int argc, char** argv){
 		std::cout << "Can't make output file: \"" << out_filename << "\"" << std::endl;
 		return 0;
 	}
-	
-	if (dir == compress){
-		compressor::compress(in_file, out_file);
+
+	bool error_occurred = false;
+	try {
+		if (dir == compress){
+			compressor::compress(in_file, out_file);
+		}
+		else {
+			//~ if (!decoder::is_input_lz78(in_file)){
+				//~ throw std::runtime_error("The input is not a compressed lz78 file.");
+			//~ }
+			//~ decoder::decompress(in_file, out_file);
+		}
+	} 
+	catch (std::runtime_error& e) {
+		std::cout << e.what() << std::endl;
+		error_occurred = true;
+	} 
+	catch (...) {
+		error_occurred = true;
 	}
 	
 	in_file.close();
 	out_file.close();
+
+	if (error_occurred || std::filesystem::file_size(out_filename) == 0) {
+		std::filesystem::remove(in_filename);
+	}
+	
+	if (!error_occurred && dont_keep){
+		std::filesystem::remove(in_filename);
+	}
 	
 	return 0;
 }

@@ -9,14 +9,16 @@ The bit stream is broken down into bit sequences of increasing length, where eac
 
 ### Note
 
-This format currently supports individual files only. The algorithm is not well-suited for multimedia files (e.g., audio, video), already compressed formats (e.g., most image formats), small files, or files with high entropy. However, it performs efficiently on files with clear patterns of repetition, such as logs, plain text files, and especially markup files (e.g., HTML, XML, Markdown).
+This format currently supports individual files only. The algorithm is not well-suited for multimedia files (e.g., audio, video), already compressed formats (e.g., most image formats), small files, or generally files with high entropy. However, it performs efficiently on files with clear patterns of repetition, such as logs, plain text files, and especially markup files (e.g., HTML, XML, Markdown).
 
-### Example
+## Example
+
+### Compression
 
 Input:
 `01000010100101010000110010`
 
-Compression:
+Breaking down:
 
 ```
 0 1 00 001 01 0010 10 100 0011 0010
@@ -36,6 +38,32 @@ At the end, `0010` is already known, so we represent it with it's address only. 
 
 Output:
 `0000 0001 0010 0111 0011 1000 0100 1110 1001 110`
+
+### Decompression
+
+Input:
+`
+0001000000100110100110101101
+`
+
+Breaking down using 3 bit long addresses:
+
+```
+0001 0000 0010 0110 1001 1010 1101
+addr  code  uncompressed bit sequence
+001   0001  1
+010   0000  0
+011   0010  10
+100   0110  100
+101   1001  1001
+110   1010  10010
+111   1101  100101 
+```
+
+Original code:
+`
+1010100100110010100101
+`
 
 ## File format
 
@@ -57,13 +85,30 @@ The remaining bits' info should be `k-1` zeroes, if the bit stream was a whole n
 
 ### Requirements for the program
 
- * A C++11 (or later) compiler.
+ * A C++17 (or later) compiler.
  * Little-endian machine (most modern systems).
 
 The codebase includes a makefile, you can compile the program with:
 
 `make all`
 
-And run the executable with:
+## Usage
 
-`./lz.out`
+Run the program: 
+`./lz78.out example.txt`
+
+By default the program is in compression mode, use `-d` to change that. If no output name was specified, 
+
+ * in compression mode the output is `[original filename].lz78`, `example.txt.lz78` in the example
+ * in decompression mode
+   * if the input name ends with `.lz78`, that will be cut off
+   * otherwise the output will be `out_[original filename]`
+
+List of flags:
+
+| Flag             | Description                                 |
+|------------------|---------------------------------------------|
+| `-o [filename]`  | Set output filename                         |
+| `-d`             | Decompress mode                             |
+| `-k`             | Remove the input file after (de)compression |
+| `-h` or `--help` | List of commands and how to                 |
