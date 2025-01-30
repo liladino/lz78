@@ -72,10 +72,10 @@ This program uses its own file format, described here. The compressed files have
 | Field                | Size       | Description                                                                 |
 |----------------------|------------|-----------------------------------------------------------------------------|
 | Format Information   | 32 bits    | Fixed string: the characters 'l' 'z' '7' and '8'                            |
-| Length Info          | 64 bits    | Number of codewords in the file (`n`).                                      |
+| Length Info          | 64 bits    | Number of codewords in the file ( `n` ).                                    |
 | Coding Info          | 64 bits    | Length of each codeword (`k = len(i) + 1`, where `i` is the address).       |
 | Padding Info         |  8 bits    | Number of padding bits at the end of the file.                              |
-| Codewords            | `n * k`    | Compressed data stored as codewords (`n*(address + new bit)`).              |
+| Codewords            | `n * k`    | Compressed data stored as codewords ( `n*(address + new bit)` ).            |
 | Remaining Bits' Info | `k-1`      | An already known address, a 'not new codeword'.                             |
 | Padding              | Variable   | Zeroes added to ensure the file size is a multiple of 8 bits (1 byte).      |
  
@@ -101,8 +101,8 @@ By default the program is in compression mode, use `-d` to change that. If no ou
 
  * in compression mode the output is `[original filename].lz78`, `example.txt.lz78` in the example
  * in decompression mode
-   * if the input name ends with `.lz78`, that will be cut off
-   * otherwise the output will be `out_[original filename]`
+   * if the input name ends with `.lz78`, that will be cut off, `example.txt.lz78` becomes `example.txt`
+   * otherwise the output will be `out_[original filename]`, `example.txt` becomes `out_example.txt`
 
 List of flags:
 
