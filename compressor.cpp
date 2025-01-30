@@ -127,15 +127,70 @@ namespace compressor{
 		static const char* format_info = "lz78"; 
 		
 		out_file.write(              format_info,                 4 * sizeof(char));		
-		out_file.write((const char*)(&number_of_codewords),       1 * sizeof(uint64_t));
-		out_file.write((const char*)(&codeword_len),              1 * sizeof(uint64_t));
-		out_file.write((const char*)(&padding_info),              1 * sizeof(uint8_t));
+		out_file.write((const char*)(&number_of_codewords),       sizeof(uint64_t));
+		out_file.write((const char*)(&codeword_len),              sizeof(uint64_t));
+		out_file.write((const char*)(&padding_info),              sizeof(uint8_t));
 		out_file.write((const char*)(compressed_part.get_data()), compressed_part.size_padded());
 	}
 }
 
 
 namespace decoder{
+	bool is_input_lz78(std::ifstream& file){
+		char buffer[5] = {0};
+		file.read (buffer, 4);
+		if (file){
+			if (strncmp(buffer, "lz78", 4) == 0){
+				return true;
+			}
+		}
+		return false;
+	}
+	uint64_t number_of_codewords = 0;
+	uint64_t codeword_len = 0;
+	uint8_t padding_info = 0;
+			
+	void decompress(std::ifstream& in_file, std::ifstream& out_file) {
+		in_file.read((char *)(&number_of_codewords), 8);
+		in_file.read((char *)(&codeword_len), 8);
+		in_file.read((char *)(&padding_info), 1);		
+	}
 	
-	
+	void break_down(std::ifstream& file, std::ifstream& out_file){
+		/* Map: address and new bits */
+		std::map<uint64_t, bool> known;
+		
+		uint64_t index = 1;
+		bits input_buffer, current, output_buffer;
+		
+		io::in::read_bytes_from_file(file, buffer, 1024);
+		
+		const uint64_t codeword_bits = number_of_codewords * codeword_len;
+		uint64_t read_bits_absolute = 0;
+
+		for (size_t i = 0; i < buffer.size(); i++, read_bits_absolute++){
+			bool newbit = buffer.at(i);
+			if (i == buffer.size() - 1){
+				//if the buffer is about to be empty, try read in a kB new data
+				buffer.clear();
+				if (0 < io::in::read_bytes_from_file(file, buffer, 1024)){
+					/* read new bits, and after this loop ends, start again
+					 * at i == 0 */
+					i = -1;
+				}
+				else {
+					//couldn't read anything, the loop should exit next time
+					i = 1;
+				}
+			}
+			
+			if (current.size() == codeword_len - 1 && read_bits_absolute < codeword_bits){
+				output_buffer.push_bits(/*find the shit*/);
+				output_buffer.push_bool(newbit);
+			}
+			else {
+				current.push_bool(newbit);
+			}
+		}
+	}
 }

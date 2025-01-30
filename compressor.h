@@ -21,7 +21,7 @@ namespace compressor{
 }
 
 namespace decoder{
-	
+	bool is_input_lz78(std::ifstream& file);
 	
 }
 
