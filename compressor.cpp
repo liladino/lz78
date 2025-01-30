@@ -168,7 +168,7 @@ namespace decoder{
 		const uint64_t codeword_bits = number_of_codewords * codeword_len;
 		uint64_t read_bits_absolute = 0;
 
-		for (size_t i = 0; i < buffer.size(); i++, read_bits_absolute++){
+		for (size_t i = 0; i < buffer.size() && read_bits_absolute < codeword_bits; i++, read_bits_absolute++){
 			bool newbit = buffer.at(i);
 			if (i == buffer.size() - 1){
 				//if the buffer is about to be empty, try read in a kB new data
@@ -185,12 +185,23 @@ namespace decoder{
 			}
 			
 			if (current.size() == codeword_len - 1 && read_bits_absolute < codeword_bits){
-				output_buffer.push_bits(/*find the shit*/);
+				bits temp;
+				/* find_the_original_word(temp)*/
+				output_buffer.push_bits(temp);
 				output_buffer.push_bool(newbit);
 			}
 			else {
 				current.push_bool(newbit);
 			}
+			
+			if (/* output buffer big enough */){
+				/* write the buffer into file *
+				 * empty buffer */
+			}
+		}
+		
+		if (/* output buffer not empty */){
+			/* write out remainder */
 		}
 	}
 }
