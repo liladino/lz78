@@ -116,7 +116,11 @@ namespace my{
 			capacity = newLen + 2;
 		}
 		
-		const T* get_data() const{
+		T* get_data() {
+			return data;
+		}
+		
+		const T* get_data() const  {
 			return data;
 		}
 		
@@ -239,6 +243,10 @@ namespace my{
 			return *this;
 		}
 				
+		uint8_t* get_data() {
+			return data.get_data();
+		}
+		
 		const uint8_t* get_data() const {
 			return data.get_data();
 		}

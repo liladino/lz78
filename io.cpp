@@ -60,8 +60,4 @@ namespace io{
 			//~ }
 		//~ }
 	}
-		
-	//~ void read_input_to_bits(std::istream& is, bits& out){
-		
-	//~ }	
 }

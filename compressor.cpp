@@ -136,6 +136,7 @@ namespace compressor{
 
 
 namespace decoder{
+	using my::vector;
 	bool is_input_lz78(std::ifstream& file){
 		char buffer[5] = {0};
 		file.read (buffer, 4);
@@ -150,30 +151,54 @@ namespace decoder{
 	uint64_t codeword_len = 0;
 	uint8_t padding_info = 0;
 			
-	void decompress(std::ifstream& in_file, std::ifstream& out_file) {
+	int decompress(std::ifstream& in_file, std::ofstream& out_file) {
+		int warning_level = 0;
 		in_file.read((char *)(&number_of_codewords), 8);
 		in_file.read((char *)(&codeword_len), 8);
 		in_file.read((char *)(&padding_info), 1);		
+		
+		warning_level = break_down(in_file, out_file);
+		
+		return warning_level;
 	}
 	
-	void break_down(std::ifstream& file, std::ifstream& out_file){
-		/* Map: address and new bits */
-		std::map<uint64_t, bool> known;
+	void find_original_word(uint64_t address, vector<codeword>& known, bits& result){
+		bits reversed;
+		while (address != 0){
+			reversed.push_bool(known[address].newbit);
+			address = known[address].address;
+		}
 		
-		uint64_t index = 1;
+		while (reversed.size()){
+			result.push_bool(reversed.last());
+			reversed.pop();
+		}
+	}
+	
+	int break_down(std::ifstream& in_file, std::ofstream& out_file){
+		int warning_level = 0;		
+		
+		/* Vector of codewords found in order
+		 * starts with a dummy element so we can use 1 based indexing */
+		vector<codeword> known(1);
 		bits input_buffer, current, output_buffer;
 		
-		io::in::read_bytes_from_file(file, buffer, 1024);
+		io::in::read_bytes_from_file(in_file, input_buffer, 1024);
 		
 		const uint64_t codeword_bits = number_of_codewords * codeword_len;
 		uint64_t read_bits_absolute = 0;
 
-		for (size_t i = 0; i < buffer.size() && read_bits_absolute < codeword_bits; i++, read_bits_absolute++){
-			bool newbit = buffer.at(i);
-			if (i == buffer.size() - 1){
-				//if the buffer is about to be empty, try read in a kB new data
-				buffer.clear();
-				if (0 < io::in::read_bytes_from_file(file, buffer, 1024)){
+		size_t i;
+		for (i = 0; i < input_buffer.size() && read_bits_absolute < codeword_bits; i++, read_bits_absolute++){
+			/* read every codeword, except the padding */
+			
+			bool newbit = input_buffer.at(i);
+			if (i == input_buffer.size() - 1){
+				/* if the buffer is about to be empty, try to read in a kB new
+				 * data. The content in this case is already in the current /
+				 * output_buffer bit streams, so we can empty it. */
+				input_buffer.clear();
+				if (0 < io::in::read_bytes_from_file(in_file, input_buffer, 1024)){
 					/* read new bits, and after this loop ends, start again
 					 * at i == 0 */
 					i = -1;
@@ -185,23 +210,66 @@ namespace decoder{
 			}
 			
 			if (current.size() == codeword_len - 1 && read_bits_absolute < codeword_bits){
+				/* strore the codeword found */ 
+				codeword found(current.to_ui64(), newbit);
+				known.push_back(found);
+				
 				bits temp;
-				/* find_the_original_word(temp)*/
+				find_original_word(current.to_ui64(), known, temp);
+
 				output_buffer.push_bits(temp);
 				output_buffer.push_bool(newbit);
+				current.clear();
 			}
 			else {
 				current.push_bool(newbit);
 			}
 			
-			if (/* output buffer big enough */){
-				/* write the buffer into file *
-				 * empty buffer */
+			if (output_buffer.size() % 8 == 0){
+				out_file.write((const char*)output_buffer.get_data(), output_buffer.size_padded());
+				output_buffer.clear();
 			}
 		}
 		
-		if (/* output buffer not empty */){
-			/* write out remainder */
+		if (known.size() != number_of_codewords + 1){
+			throw std::runtime_error("Unexpected end of file found!");
 		}
+		
+		if (padding_info > 0){
+			/* read in the remaining bits (if present), which correspond to a known sequence */
+			io::in::read_bytes_from_file(in_file, input_buffer, INT_MAX);
+			
+			bits current, temp;
+			
+			if (input_buffer.size() - padding_info != codeword_len - 1){
+				if (input_buffer.size() - padding_info < codeword_len - 1){
+					std::cout << "Unexpected end of file found!" << std::endl;
+					warning_level = 1;
+				}
+				else {
+					std::cout << "Longer file than expected!" << std::endl;
+					warning_level = 2;
+				}
+			}
+			
+			for (; i < std::min(input_buffer.size() - padding_info, codeword_len - 1); i++){
+				current.push_bool(input_buffer.at(i));
+			}
+			
+			if (current.to_ui64() != 0){
+				/* there are k-1 zeroes if there was a whole number of codewords */
+				find_original_word(current.to_ui64(), known, temp);
+				output_buffer.push_bits(temp);
+			}
+		}
+		
+		if (output_buffer.size() > 0){
+			output_buffer.add_padding();
+		
+			out_file.write((const char*)output_buffer.get_data(), output_buffer.size_padded());
+			output_buffer.clear();
+		}
+		
+		return warning_level;
 	}
 }

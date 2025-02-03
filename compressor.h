@@ -8,9 +8,10 @@
 #include <map>
 #include <iostream>
 #include <iomanip>
+#include <climits>
 
 namespace compressor{
-	extern size_t codeword_len;
+	extern uint64_t codeword_len;
 	void break_down(std::ifstream& file, my::vector<codeword>& result);
 	uint64_t set_max_codeword_len(const my::vector<codeword>& result);
 	void print_bit(const codeword& c);
@@ -21,8 +22,13 @@ namespace compressor{
 }
 
 namespace decoder{
+	extern uint64_t number_of_codewords;
+	extern uint64_t codeword_len;
+	extern uint8_t padding_info;
 	bool is_input_lz78(std::ifstream& file);
-	
+	int decompress(std::ifstream& in_file, std::ofstream& out_file) ;
+	void find_original_word(uint64_t address, my::vector<codeword>& known, bits& result);
+	int break_down(std::ifstream& in_file, std::ofstream& out_file);
 }
 
 #endif
