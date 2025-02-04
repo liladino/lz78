@@ -22,6 +22,12 @@ namespace compressor{
 		
 		static const char* format_info = "lz78"; 
 		
+		#ifdef DEBUG
+		std::cout << "num of codewords: " << number_of_codewords << std::endl
+		          << "codeword len:     " << codeword_len << std::endl
+		          << "padding info:     " << padding_info << std::endl;
+		#endif
+		
 		out_file.write(              format_info,                 4 * sizeof(char));		
 		out_file.write((const char*)(&number_of_codewords),       sizeof(uint64_t));
 		out_file.write((const char*)(&codeword_len),              sizeof(uint64_t));
@@ -34,29 +40,35 @@ namespace compressor{
 		uint64_t index = 1;
 		bits buffer, current;
 		
-		io::in::read_bytes_from_file(file, buffer, 1024);
+		io::in::read_bytes_from_file(file, buffer, 
+			#ifdef DEBUG
+			1
+			#else
+			1024
+			#endif
+		);
 		
-		#ifdef DEBUG
-		std::cout << "input: " << buffer << std::endl;			
-		#endif
+		//~ #ifdef DEBUG
+		//~ std::cout << "input: " << buffer << std::endl;			
+		//~ #endif
 
 		for (int64_t i = 0; i < (int64_t)buffer.size(); i++){
 			bool newbit = buffer.at(i);
 			if (i == (int64_t)buffer.size() - 1){
 				io::in::handle_empty_buffer(file, buffer, i);
 				
-				#ifdef DEBUG
-				if (i != 1){
-					std::cout << "input: " << buffer << std::endl;
-				}
-				#endif
+				//~ #ifdef DEBUG
+				//~ if (i != 1){
+					//~ std::cout << "input: " << buffer << std::endl;
+				//~ }
+				//~ #endif
 			}
 			
 			current.push_bool(newbit);
 						
 			if (0 == known.count(current)){
 				#ifdef DEBUG
-				std::cout << current << '\n';
+				std::cout << index << ", " << current << '\n';
 				#endif
 				
 				known[current] = index++;
@@ -85,9 +97,9 @@ namespace compressor{
 		}
 		
 		
-		#ifdef DEBUG
-		std::cout << std::endl;			
-		#endif
+		//~ #ifdef DEBUG
+		//~ std::cout << std::endl;			
+		//~ #endif
 	}
 	
 	uint64_t codeword_len;
@@ -157,7 +169,11 @@ namespace decoder{
 		int warning_level = 0;
 		in_file.read((char *)(&number_of_codewords), 8);
 		in_file.read((char *)(&codeword_len), 8);
-		in_file.read((char *)(&padding_info), 1);		
+		in_file.read((char *)(&padding_info), 1);	
+		
+		#ifdef DEBUG
+		std::cout << number_of_codewords << ' ' << codeword_len << ' ' << (int)padding_info << std::endl;
+		#endif	
 		
 		warning_level = break_down(in_file, out_file);
 		
@@ -185,25 +201,44 @@ namespace decoder{
 		vector<codeword> known(1);
 		bits input_buffer, current, output_buffer;
 		
-		io::in::read_bytes_from_file(in_file, input_buffer, 1024);
+		io::in::read_bytes_from_file(in_file, input_buffer, 
+			#ifdef DEBUG
+			1
+			#else
+			1024
+			#endif
+		);
 		
 		const uint64_t codeword_bits = number_of_codewords * codeword_len;
 		uint64_t read_bits_absolute = 0;
 
-		int64_t i;
-		for (i = 0; i < (int64_t)input_buffer.size() && read_bits_absolute < codeword_bits; i++, read_bits_absolute++){
+		int64_t i; 
 			/* read every codeword, except the padding */
-			
+		for (i = 0; i < (int64_t)input_buffer.size() && read_bits_absolute < codeword_bits; i++, read_bits_absolute++){
 			bool newbit = input_buffer.at(i);
+			
+			#ifdef DEBUG
+			std::cout << "i: " << i << "\tabsolute: " << read_bits_absolute << "\tcurrent bits: " << current << (int)newbit << std::endl;
+			#endif
 			
 			if (i == (int64_t)input_buffer.size() - 1){
 				io::in::handle_empty_buffer(in_file, input_buffer, i);
+				
+				#ifdef DEBUG
+				if (i != 1){
+					std::cout << "input: " << input_buffer << std::endl;
+				}
+				#endif
 			}
 			
 			if (current.size() == codeword_len - 1 && read_bits_absolute < codeword_bits){
 				/* strore the codeword found */ 
 				codeword found(current.to_ui64(), newbit);
 				known.push_back(found);
+				
+				#ifdef DEBUG
+				std::cout << "Codeword: " << found << std::endl;
+				#endif
 				
 				bits temp;
 				find_original_word(current.to_ui64(), known, temp);
@@ -225,10 +260,10 @@ namespace decoder{
 			throw std::runtime_error("Unexpected end of file found!");
 		}
 		
-		if (padding_info > 0){
-			/* read in the remaining bits (if present), which correspond to a known sequence */
-			io::in::read_bytes_from_file(in_file, input_buffer, INT_MAX);
-			
+		/* read in the remaining bits (if present) */
+		io::in::read_bytes_from_file(in_file, input_buffer, INT_MAX);
+		
+		{	
 			bits current, temp;
 			
 			if (input_buffer.size() - padding_info != codeword_len - 1){
@@ -236,14 +271,15 @@ namespace decoder{
 					std::cout << "Unexpected end of file found!" << std::endl;
 					warning_level = 1;
 				}
-				else {
-					std::cout << "Longer file than expected!" << std::endl;
-					warning_level = 2;
-				}
 			}
 			
 			for (; i < (int64_t)std::min(input_buffer.size() - padding_info, codeword_len - 1); i++){
 				current.push_bool(input_buffer.at(i));
+			}
+			
+			if (current.size() - padding_info < codeword_len - 1) {
+				std::cout << "Longer file than expected!" << std::endl;
+				warning_level = 2;
 			}
 			
 			if (current.to_ui64() != 0){

@@ -9,10 +9,6 @@ int main(int argc, char** argv){
 		}
 	}
 	
-	#ifdef DEBUG
-	tests();
-	#endif
-	
 	std::string in_filename = "";
 	std::string out_filename = "";
 	
@@ -24,7 +20,7 @@ int main(int argc, char** argv){
 		return 0;
 	}
 	
-	bool dont_keep = false;
+	bool dont_keep = false, run_tests = false;
 	
 	try {
 		int o = 0;
@@ -47,6 +43,9 @@ int main(int argc, char** argv){
 			}
 			else if (strncmp(argv[i], "-k", 2) == 0) {
 				dont_keep = true;
+			}
+			else if (strncmp(argv[i], "-t", 2) == 0) {
+				run_tests = true;
 			}
 			else if (strncmp(argv[i], "--help", 6) == 0 || strncmp(argv[i], "-h", 2) == 0){
 				std::cout << 
@@ -72,6 +71,10 @@ int main(int argc, char** argv){
 		return 0;
 	}
 	
+	#ifdef DEBUG
+	if (run_tests) tests();
+	#endif
+	
 	if (in_filename == ""){
 		std::cout << "No input file given, try --help." << std::endl;
 		return 0;
@@ -88,6 +91,12 @@ int main(int argc, char** argv){
 		else if (strncmp(in_filename.c_str() + in_filename.size() - 5, ".lz78", 5) == 0){
 			out_filename = in_filename;
 			out_filename.erase(out_filename.size() - 5);
+			
+			std::ofstream check(out_filename, std::ios::in);
+			if (check.is_open()){
+				out_filename = "out_" + out_filename;
+				check.close();
+			}
 		}
 		else {
 			out_filename = "out_" + in_filename;

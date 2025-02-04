@@ -68,14 +68,22 @@ public:
 	}
 	
 	uint64_t to_ui64() const{
-		const uint8_t* const  data = v.get_data();
-		size_t size = v.size_in_ui8();
+		const uint8_t* const data = v.get_data();
+		size_t size = v.size();
 		
 		uint64_t result = 0;
-		for (size_t i = (size-1 > 7 ? 7 : size-1); i != 0; i--){
-			result <<= 8;
-			result += data[i];
-		}		
+		uint64_t mask = 1 << 7;
+		for (size_t i = 0; i < (size > 63 ? 63 : size); i++){
+			result += ((data[i / 8] & mask) == 0 ? 0 : 1);
+			
+			mask >>= 1;			
+			if (mask == 0){
+				mask = 1 << 7;
+			}
+			if (i != (size > 63 ? 63 : size) - 1){
+				result <<= 1;
+			}
+		}	
 		
 		return result;
 	}

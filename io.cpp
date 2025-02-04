@@ -39,6 +39,7 @@ namespace io{
 				else {
 					break;
 				}
+				i++;
 			}
 			
 			return i;
@@ -49,7 +50,13 @@ namespace io{
 			 * data. The content in this case is already in the current /
 			 * output_buffer bit streams, so we can empty it. */
 			buffer.clear();
-			if (0 < io::in::read_bytes_from_file(file, buffer, 1024)){
+			if (0 < io::in::read_bytes_from_file(file, buffer, 
+							#ifdef DEBUG
+							1
+							#else
+							1024
+							#endif			
+						)){
 				/* read new bits, and after this loop ends, start again
 				 * at i == 0 */
 				i = -1;
