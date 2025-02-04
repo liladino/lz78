@@ -3,27 +3,17 @@
 namespace compressor{	
 	using my::vector;
 	
-	void break_down(std::ifstream& file, vector<codeword>& result){
+	void break_down(std::istream& file, vector<codeword>& result){
 		std::map<bits, uint64_t> known;
 		uint64_t index = 1;
 		bits buffer, current;
 		
 		io::in::read_bytes_from_file(file, buffer, 1024);
 
-		for (size_t i = 0; i < buffer.size(); i++){
+		for (int64_t i = 0; i < (int64_t)buffer.size(); i++){
 			bool newbit = buffer.at(i);
-			if (i == buffer.size() - 1){
-				//if the buffer is about to be empty, try read in a kB new data
-				buffer.clear();
-				if (0 < io::in::read_bytes_from_file(file, buffer, 1024)){
-					/* read new bits, and after this loop ends, start again
-					 * at i == 0 */
-					i = -1;
-				}
-				else {
-					//couldn't read anything, the loop should exit next time
-					i = 1;
-				}
+			if (i == (int64_t)buffer.size() - 1){
+				io::in::handle_empty_buffer(file, buffer, i);
 			}
 			
 			current.push_bool(newbit);
@@ -111,7 +101,7 @@ namespace compressor{
 	}
 	
 	//expects two in binary mode open files 
-	void compress(std::ifstream& in_file, std::ofstream& out_file){	
+	void compress(std::istream& in_file, std::ostream& out_file){	
 		bits compressed_part;
 		vector<codeword> code;
 		
@@ -137,7 +127,7 @@ namespace compressor{
 
 namespace decoder{
 	using my::vector;
-	bool is_input_lz78(std::ifstream& file){
+	bool is_input_lz78(std::istream& file){
 		char buffer[5] = {0};
 		file.read (buffer, 4);
 		if (file){
@@ -151,7 +141,7 @@ namespace decoder{
 	uint64_t codeword_len = 0;
 	uint8_t padding_info = 0;
 			
-	int decompress(std::ifstream& in_file, std::ofstream& out_file) {
+	int decompress(std::istream& in_file, std::ostream& out_file) {
 		int warning_level = 0;
 		in_file.read((char *)(&number_of_codewords), 8);
 		in_file.read((char *)(&codeword_len), 8);
@@ -175,7 +165,7 @@ namespace decoder{
 		}
 	}
 	
-	int break_down(std::ifstream& in_file, std::ofstream& out_file){
+	int break_down(std::istream& in_file, std::ostream& out_file){
 		int warning_level = 0;		
 		
 		/* Vector of codewords found in order
@@ -188,25 +178,14 @@ namespace decoder{
 		const uint64_t codeword_bits = number_of_codewords * codeword_len;
 		uint64_t read_bits_absolute = 0;
 
-		size_t i;
-		for (i = 0; i < input_buffer.size() && read_bits_absolute < codeword_bits; i++, read_bits_absolute++){
+		int64_t i;
+		for (i = 0; i < (int64_t)input_buffer.size() && read_bits_absolute < codeword_bits; i++, read_bits_absolute++){
 			/* read every codeword, except the padding */
 			
 			bool newbit = input_buffer.at(i);
-			if (i == input_buffer.size() - 1){
-				/* if the buffer is about to be empty, try to read in a kB new
-				 * data. The content in this case is already in the current /
-				 * output_buffer bit streams, so we can empty it. */
-				input_buffer.clear();
-				if (0 < io::in::read_bytes_from_file(in_file, input_buffer, 1024)){
-					/* read new bits, and after this loop ends, start again
-					 * at i == 0 */
-					i = -1;
-				}
-				else {
-					//couldn't read anything, the loop should exit next time
-					i = 1;
-				}
+			
+			if (i == (int64_t)input_buffer.size() - 1){
+				io::in::handle_empty_buffer(in_file, input_buffer, i);
 			}
 			
 			if (current.size() == codeword_len - 1 && read_bits_absolute < codeword_bits){
@@ -252,7 +231,7 @@ namespace decoder{
 				}
 			}
 			
-			for (; i < std::min(input_buffer.size() - padding_info, codeword_len - 1); i++){
+			for (; i < (int64_t)std::min(input_buffer.size() - padding_info, codeword_len - 1); i++){
 				current.push_bool(input_buffer.at(i));
 			}
 			
