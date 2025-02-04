@@ -5,6 +5,9 @@
 #include "compressor.h"
 #include "io.h"
 #include "vector.h"
+#include <iostream>
+#include <string>
+#include <stringstream>
 
 #ifdef DEBUG
 	#include "gtest_lite.h"

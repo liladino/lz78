@@ -1,25 +1,8 @@
 #include "tests.h"
 
-void tests(){
-	#ifdef DEBUG
+void vectortest(){
 	using my::vector;
 	
-	TEST(io1, iotest){
-		std::string s = "the quick brown fox jumps over the lazy dog";	
-		bits message;
-		for (size_t i = 0; i < s.size(); i++){
-			message.push_ui8(s[i]);
-		}
-		vector<uint8_t> transformed;
-		io::out::flush_bits_to_vector(message, transformed);
-		bits back;
-		for (const uint8_t& x : transformed){
-			back.push_ui8(x);
-		}
-		
-		EXPECT_TRUE(back == message);
-	} ENDM	
-		
 	TEST(vector1, constr){
 		vector<int> v;
 		EXPECT_EQ((size_t)0, v.size()) << "Size not 0." << std::endl;
@@ -137,6 +120,35 @@ void tests(){
 		EXPECT_EQ(0b11110000, (int)v[6]);
 		EXPECT_EQ(0b01010101, (int)v[7]);
 	} ENDM
+}
+
+void compressiontest(){
+	stringst
+	
+	TEST(io1, iotest){
+		
+		
+		std::string s = "the quick brown fox jumps over the lazy dog";	
+		bits message;
+		for (size_t i = 0; i < s.size(); i++){
+			message.push_ui8(s[i]);
+		}
+		vector<uint8_t> transformed;
+		io::out::flush_bits_to_vector(message, transformed);
+		bits back;
+		for (const uint8_t& x : transformed){
+			back.push_ui8(x);
+		}
+		
+		EXPECT_TRUE(back == message);
+	} ENDM		
+}
+
+void tests(){
+	#ifdef DEBUG
+	
+	vectortest();
+	compressiontest();
 	
 	#endif
 }

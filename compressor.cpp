@@ -3,6 +3,29 @@
 namespace compressor{	
 	using my::vector;
 	
+	//expects two in binary mode open files 
+	void compress(std::istream& in_file, std::ostream& out_file){	
+		bits compressed_part;
+		vector<codeword> code;
+		
+		break_down(in_file, code);
+		set_compressed_data(code, compressed_part);
+		
+		uint64_t number_of_codewords = code.size();
+		set_max_codeword_len(code); 
+		/* Padding: 0 bits, if divisible by 8, otherwise 8 - remainder. */
+		uint8_t padding_info = (8 - (((codeword_len % 8) * (number_of_codewords % 8)) % 8)) % 8;
+		add_padding(compressed_part);
+		
+		static const char* format_info = "lz78"; 
+		
+		out_file.write(              format_info,                 4 * sizeof(char));		
+		out_file.write((const char*)(&number_of_codewords),       sizeof(uint64_t));
+		out_file.write((const char*)(&codeword_len),              sizeof(uint64_t));
+		out_file.write((const char*)(&padding_info),              sizeof(uint8_t));
+		out_file.write((const char*)(compressed_part.get_data()), compressed_part.size_padded());
+	}
+	
 	void break_down(std::istream& file, vector<codeword>& result){
 		std::map<bits, uint64_t> known;
 		uint64_t index = 1;
@@ -99,29 +122,6 @@ namespace compressor{
 		
 		return x;
 	}
-	
-	//expects two in binary mode open files 
-	void compress(std::istream& in_file, std::ostream& out_file){	
-		bits compressed_part;
-		vector<codeword> code;
-		
-		break_down(in_file, code);
-		set_compressed_data(code, compressed_part);
-		
-		uint64_t number_of_codewords = code.size();
-		set_max_codeword_len(code); 
-		/* Padding: 0 bits, if divisible by 8, otherwise 8 - remainder. */
-		uint8_t padding_info = (8 - (((codeword_len % 8) * (number_of_codewords % 8)) % 8)) % 8;
-		add_padding(compressed_part);
-		
-		static const char* format_info = "lz78"; 
-		
-		out_file.write(              format_info,                 4 * sizeof(char));		
-		out_file.write((const char*)(&number_of_codewords),       sizeof(uint64_t));
-		out_file.write((const char*)(&codeword_len),              sizeof(uint64_t));
-		out_file.write((const char*)(&padding_info),              sizeof(uint8_t));
-		out_file.write((const char*)(compressed_part.get_data()), compressed_part.size_padded());
-	}
 }
 
 
@@ -205,8 +205,7 @@ namespace decoder{
 			}
 			
 			if (output_buffer.size() % 8 == 0){
-				out_file.write((const char*)output_buffer.get_data(), output_buffer.size_padded());
-				output_buffer.clear();
+				io::out::flush_output_buffer(output_buffer, out_file);
 			}
 		}
 		
@@ -244,9 +243,8 @@ namespace decoder{
 		
 		if (output_buffer.size() > 0){
 			output_buffer.add_padding();
-		
-			out_file.write((const char*)output_buffer.get_data(), output_buffer.size_padded());
-			output_buffer.clear();
+			
+			io::out::flush_output_buffer(output_buffer, out_file);
 		}
 		
 		return warning_level;
