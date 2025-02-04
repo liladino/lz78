@@ -7,7 +7,7 @@
 #include "vector.h"
 #include <iostream>
 #include <string>
-#include <stringstream>
+#include <sstream>
 
 #ifdef DEBUG
 	#include "gtest_lite.h"

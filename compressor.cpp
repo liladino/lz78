@@ -11,10 +11,13 @@ namespace compressor{
 		break_down(in_file, code);
 		set_compressed_data(code, compressed_part);
 		
-		uint64_t number_of_codewords = code.size();
+		/* the code vector stores both codewords, and the last, remaining bits' 
+		 * address, which is not a codeword. */
+		uint64_t number_of_codewords = code.size() - 1;
 		set_max_codeword_len(code); 
+		
 		/* Padding: 0 bits, if divisible by 8, otherwise 8 - remainder. */
-		uint8_t padding_info = (8 - (((codeword_len % 8) * (number_of_codewords % 8)) % 8)) % 8;
+		uint8_t padding_info = (8 - (((codeword_len % 8) * (number_of_codewords % 8) + codeword_len - 1) % 8)) % 8;
 		add_padding(compressed_part);
 		
 		static const char* format_info = "lz78"; 
@@ -32,25 +35,39 @@ namespace compressor{
 		bits buffer, current;
 		
 		io::in::read_bytes_from_file(file, buffer, 1024);
+		
+		#ifdef DEBUG
+		std::cout << "input: " << buffer << std::endl;			
+		#endif
 
 		for (int64_t i = 0; i < (int64_t)buffer.size(); i++){
 			bool newbit = buffer.at(i);
 			if (i == (int64_t)buffer.size() - 1){
 				io::in::handle_empty_buffer(file, buffer, i);
+				
+				#ifdef DEBUG
+				if (i != 1){
+					std::cout << "input: " << buffer << std::endl;
+				}
+				#endif
 			}
 			
 			current.push_bool(newbit);
+						
 			if (0 == known.count(current)){
-				//int newbit = current.last();
-				known[current] = index++;
+				#ifdef DEBUG
+				std::cout << current << '\n';
+				#endif
 				
+				known[current] = index++;
+								
 				if (current.size() > 1){
 					current.pop();				
 					result.push_back(codeword(known[current], newbit));
 				}
 				else{				
 					result.push_back(codeword(0, newbit));
-				}
+				}				
 				current.clear();
 			}
 		}
@@ -66,6 +83,11 @@ namespace compressor{
 			 * the file format will be consistent*/
 			result.push_back(codeword(0, 0, true));
 		}
+		
+		
+		#ifdef DEBUG
+		std::cout << std::endl;			
+		#endif
 	}
 	
 	uint64_t codeword_len;
@@ -127,16 +149,6 @@ namespace compressor{
 
 namespace decoder{
 	using my::vector;
-	bool is_input_lz78(std::istream& file){
-		char buffer[5] = {0};
-		file.read (buffer, 4);
-		if (file){
-			if (strncmp(buffer, "lz78", 4) == 0){
-				return true;
-			}
-		}
-		return false;
-	}
 	uint64_t number_of_codewords = 0;
 	uint64_t codeword_len = 0;
 	uint8_t padding_info = 0;

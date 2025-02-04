@@ -59,5 +59,16 @@ namespace io{
 				i = 1;
 			}
 		}
+		
+		bool is_input_lz78(std::istream& file){
+			char buffer[5] = {0};
+			file.read (buffer, 4);
+			if (file){
+				if (strncmp(buffer, "lz78", 4) == 0){
+					return true;
+				}
+			}
+			return false;
+		}
 	}
 }

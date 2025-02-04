@@ -15,6 +15,7 @@ namespace io{
 	namespace in{
 		size_t read_bytes_from_file(std::istream& file, bits& buffer, size_t number_of_bytes);
 		void handle_empty_buffer(std::istream& file, bits& buffer, int64_t& i);
+		bool is_input_lz78(std::istream& file);
 	}
 }
 

@@ -110,7 +110,7 @@ int main(int argc, char** argv){
 			compressor::compress(in_file, out_file);
 		}
 		else {
-			if (!decoder::is_input_lz78(in_file)){
+			if (!io::in::is_input_lz78(in_file)){
 				throw std::runtime_error("The input is not a compressed lz78 file.");
 			}
 			decoder::decompress(in_file, out_file);

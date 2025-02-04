@@ -196,7 +196,10 @@ namespace my{
 			if (data.size() <= length / 8){
 				data.push_back(0);
 			}
+			/* delete the bit to make sure theres no garbage there */
+			data.at(length / 8) &= ~(1 << (7 - length % 8));
 			if (b){
+				/* add new bit */
 				data.at(length / 8) |= 1 << (7 - length % 8); 
 			}
 			length++;

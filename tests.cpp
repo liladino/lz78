@@ -123,25 +123,67 @@ void vectortest(){
 }
 
 void compressiontest(){
-	stringst
-	
-	TEST(io1, iotest){
+	/* Compress the example in example in readme padded to be 32 bits and whole
+	 * codewords.
+	 * ........ ........ ........ ..******
+	 * 01000010 10010101 00001100 10000101
+	 * 
+	 * 0 1 00 001 01 0010 10 100 0011 00100 00101
+	 * addr  code  uncompressed bit sequence
+	 * 0001  0000  0
+	 * 0010  0001  1
+	 * 0011  0010  00
+	 * 0100  0111  001 
+	 * 0101  0011  01
+	 * 0110  1000  0010
+	 * 0111  0100  10
+	 * 1000  1110  100
+	 * 1001  1001  0011
+	 * 1010  1100  00100
+	 * 1011  1101  00101
+	 * 
+	 * number_of_codewords = 11
+	 * codeword_len = 4
+	 * padding_info = 1
+	 * 
+	 * (length of section in bits, conent)
+	 * output: (64, lz78) (64, 11) (64, 4) (8, 1) (44, 0000 0001 0010 0111 0011 1000 0100 1110 1001 1100 1101) (3, 000) (1, 0)
+	 * 
+	 * */
+	std::ostringstream temp(std::ios::binary);
+    const uint8_t data[4] = {0b01000010, 0b10010101, 0b00001100, 0b10000101};
+    temp.write(reinterpret_cast<const char*>(data), 4);
+    
+	TEST(comp, result){
+		std::istringstream in_file(temp.str(), std::ios::binary);
+		std::ostringstream temp(std::ios::binary);
 		
+		EXPECT_NO_THROW(compressor::compress(in_file, temp));
 		
-		std::string s = "the quick brown fox jumps over the lazy dog";	
-		bits message;
-		for (size_t i = 0; i < s.size(); i++){
-			message.push_ui8(s[i]);
-		}
-		vector<uint8_t> transformed;
-		io::out::flush_bits_to_vector(message, transformed);
-		bits back;
-		for (const uint8_t& x : transformed){
-			back.push_ui8(x);
-		}
+		std::istringstream out_file(temp.str(), std::ios::binary);
+		EXPECT_TRUE(io::in::is_input_lz78(out_file));
 		
-		EXPECT_TRUE(back == message);
-	} ENDM		
+		EXPECT_EQ((size_t)27, out_file.str().size());
+		
+		uint64_t number_of_codewords;
+		uint64_t codeword_len;
+		uint8_t padding_info;
+		
+		out_file.read((char *)(&number_of_codewords), 8);
+		EXPECT_EQ(11llu, number_of_codewords);
+		
+		out_file.read((char *)(&codeword_len), 8);
+		EXPECT_EQ(4llu, codeword_len);
+		
+		out_file.read((char *)(&padding_info), 1);
+		EXPECT_EQ(1, (int)padding_info);
+		
+		const uint8_t expect_res[] = {0b00000001, 0b00100111, 0b00111000, 0b01001110, 0b10011100, 0b11010000};
+		char actual_res[7] = {0};
+		
+		out_file.read(actual_res, 6);
+		EXPECT_TRUE(strncmp((const char *)expect_res, actual_res, 6) == 0);
+	} ENDM
 }
 
 void tests(){
