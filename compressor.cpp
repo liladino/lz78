@@ -22,12 +22,10 @@ namespace compressor{
 		
 		static const char* format_info = "lz78"; 
 		
-		#ifdef DEBUG
 		std::cout << "num of codewords: " << number_of_codewords << std::endl
 		          << "codeword len:     " << codeword_len << std::endl
 		          << "padding info:     " << (int)padding_info << std::endl << std::endl
 		          << "new size:         " << 4 + 8 + 8 + 1 + (number_of_codewords * codeword_len + codeword_len - 1 + padding_info)/8 << 'B' << std::endl;
-		#endif
 		
 		out_file.write(              format_info,                 4 * sizeof(char));		
 		out_file.write((const char*)(&number_of_codewords),       sizeof(uint64_t));
@@ -172,12 +170,10 @@ namespace decoder{
 		in_file.read((char *)(&codeword_len), 8);
 		in_file.read((char *)(&padding_info), 1);	
 		
-		#ifdef DEBUG
 		std::cout << "num of codewords: " << number_of_codewords << std::endl
 		          << "codeword len:     " << codeword_len << std::endl
 		          << "padding info:     " << (int)padding_info << std::endl;
-		#endif	
-		
+				
 		warning_level = break_down(in_file, out_file);
 		
 		return warning_level;
@@ -264,27 +260,29 @@ namespace decoder{
 		}
 		
 		/* read in the remaining bits (if present) */
-		io::in::read_bytes_from_file(in_file, input_buffer, INT_MAX);
+		io::in::read_bytes_from_file(in_file, input_buffer, codeword_len / 8 + 1);
 		
 		{	
 			bits current, temp;
 			
 			if (input_buffer.size() - padding_info != codeword_len - 1){
-				if (input_buffer.size() - padding_info < codeword_len - 1){
+				if ((int64_t)input_buffer.size() - (int64_t)padding_info < (int64_t)codeword_len - 1){
 					std::cout << "Unexpected end of file found!" << std::endl;
 					warning_level = 1;
 				}
 			}
 			
-			for (; i < (int64_t)std::min(input_buffer.size() - padding_info, codeword_len - 1); i++){
+			int64_t i2 = i;			
+			for (; i < (int64_t)std::min(input_buffer.size() - padding_info, i2 + codeword_len - 1); i++){
+				//~ std::cout << i << ' ' << input_buffer.size() << std::endl; 
 				current.push_bool(input_buffer.at(i));
 			}
 			
-			if (current.size() - padding_info < codeword_len - 1) {
+			if ((int64_t)current.size() - (int64_t)padding_info > (int64_t)codeword_len - 1) {
 				std::cout << "Longer file than expected!" << std::endl;
 				warning_level = 2;
 			}
-			
+				
 			if (current.to_ui64() != 0){
 				/* there are k-1 zeroes if there was a whole number of codewords */
 				find_original_word(current.to_ui64(), known, temp);
@@ -293,7 +291,7 @@ namespace decoder{
 		}
 		
 		if (output_buffer.size() > 0){
-			output_buffer.add_padding();
+			//~ output_buffer.add_padding();
 			
 			io::out::flush_output_buffer(output_buffer, out_file);
 		}
