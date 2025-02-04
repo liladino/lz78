@@ -71,9 +71,15 @@ int main(int argc, char** argv){
 		return 0;
 	}
 	
-	#ifdef DEBUG
-	if (run_tests) tests();
-	#endif
+	
+	if (run_tests){
+		#ifdef DEBUG
+		tests();
+		#else
+		std::cout << "Tests only available in debug mode. Try:\n\tmake clean\n\tmake all\n" << std::endl; 
+		#endif
+	}
+	
 	
 	if (in_filename == ""){
 		std::cout << "No input file given, try --help." << std::endl;
