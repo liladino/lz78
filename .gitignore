@@ -54,6 +54,9 @@ test.txt
 debuglog.txt
 example.txt
 
+#program output
+*.lz78
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd

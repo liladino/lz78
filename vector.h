@@ -220,7 +220,8 @@ namespace my{
 		}
 		
 		size_t size_in_ui8() const {
-			return data.size();
+			//~ return data.size();
+			return (length) / 8;
 		}
 		
 		bool at(size_t index) const {
