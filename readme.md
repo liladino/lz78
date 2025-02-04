@@ -112,3 +112,4 @@ List of flags:
 | `-d`             | Decompress mode                             |
 | `-k`             | Remove the input file after (de)compression |
 | `-h` or `--help` | List of commands and how to                 |
+| `-t`             | Run tests. Only works in debug compilation  |
